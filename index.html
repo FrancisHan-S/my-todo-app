@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simple To-Do List App</title>
+<style>
+  /* Modern, clean styling */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    color: #333;
+  }
+  #app {
+    background: white;
+    margin: 2rem;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    width: 350px;
+    max-width: 90vw;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #4a90e2;
+  }
+  form {
+    display: flex;
+    margin-bottom: 1rem;
+  }
+  input[type="text"] {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #4a90e2;
+    border-radius: 8px 0 0 8px;
+    font-size: 1rem;
+  }
+  button {
+    background-color: #4a90e2;
+    border: none;
+    color: white;
+    padding: 0 1.2rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #357ABD;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    background: #f2f2f2;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: inset 0 -3px 5px rgba(0,0,0,0.05);
+  }
+  li.completed {
+    text-decoration: line-through;
+    color: #999;
+    background: #d6eaff;
+  }
+  .actions button {
+    background: none;
+    border: none;
+    color: #4a90e2;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    padding: 0;
+    transition: color 0.3s ease;
+  }
+  .actions button:hover {
+    color: #e74c3c;
+  }
+  footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+<div id="app" role="main" aria-labelledby="app-title">
+  <h1 id="app-title">To-Do List</h1>
+  <form id="todo-form" aria-label="Add new to-do">
+    <input type="text" id="todo-input" placeholder="What needs to be done?" aria-required="true" autocomplete="off" />
+    <button type="submit" aria-label="Add to-do item">+</button>
+  </form>
+  <ul id="todo-list" aria-live="polite" aria-relevant="additions removals"></ul>
+  <footer>Made with ❤️ - Week 13-14 Web Deployment Lab</footer>
+</div>
+
+<script>
+  (() => {
+    const form = document.getElementById('todo-form');
+    const input = document.getElementById('todo-input');
+    const list = document.getElementById('todo-list');
+
+    // Load saved todos from localStorage
+    const savedTodos = JSON.parse(localStorage.getItem('todos')) || [];
+
+    function saveTodos() {
+      localStorage.setItem('todos', JSON.stringify(savedTodos));
+    }
+
+    function renderTodos() {
+      list.innerHTML = '';
+      savedTodos.forEach((todo, idx) => {
+        const li = document.createElement('li');
+        li.textContent = todo.text;
+        li.tabIndex = 0;
+        if (todo.completed) {
+          li.classList.add('completed');
+        }
+        // Buttons container
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        // Complete Button
+        const completeBtn = document.createElement('button');
+        completeBtn.innerHTML = todo.completed ? '🔄' : '✔️';
+        completeBtn.title = todo.completed ? 'Mark as incomplete' : 'Mark as complete';
+        completeBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          savedTodos[idx].completed = !savedTodos[idx].completed;
+          saveTodos();
+          renderTodos();
+        });
+        actions.appendChild(completeBtn);
+
+        // Delete Button
+        const delBtn = document.createElement('button');
+        delBtn.innerHTML = '🗑️';
+        delBtn.title = 'Delete to-do';
+        delBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          savedTodos.splice(idx, 1);
+          saveTodos();
+          renderTodos();
+        });
+        actions.appendChild(delBtn);
+
+        li.appendChild(actions);
+        list.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (text !== '') {
+        savedTodos.push({ text, completed: false });
+        saveTodos();
+        renderTodos();
+        input.value = '';
+        input.focus();
+      }
+    });
+
+    // Initial rendering
+    renderTodos();
+  })();
+</script>
+</body>
+</html>
